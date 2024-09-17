@@ -1,0 +1,4 @@
+ultralytics==8.2.77
+roboflow==1.1.40
+opencv-python==1.26.4
+supervision==0.22.0
