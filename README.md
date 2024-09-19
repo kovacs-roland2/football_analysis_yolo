@@ -6,3 +6,11 @@
 
 2. Run the `main.py`
     - It will use the best weights for the trained model.
+
+## Requirements
+- Python 3.12 or higher
+- Install the necessary packages listed in `requirements.txt`:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
