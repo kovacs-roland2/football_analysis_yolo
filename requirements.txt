@@ -2,3 +2,4 @@ ultralytics==8.2.77
 opencv-python==4.10.0.84
 roboflow==1.1.40
 supervision==0.22.0
+scikit_learn==1.5.2
