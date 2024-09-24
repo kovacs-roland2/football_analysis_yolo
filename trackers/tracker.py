@@ -3,6 +3,7 @@ import supervision as sv
 import pickle
 import os
 import numpy as np
+import pandas as pd
 from utils import get_center_of_bbox, get_bbox_width
 import cv2
 
@@ -31,6 +32,36 @@ class Tracker():
         """
         self.model = YOLO(model_path)
         self.tracker = sv.ByteTrack()
+
+    def interpolate_ball_positions(self, ball_position: list) -> list:
+        """
+        Interpolates and fills missing ball positions across video frames.
+
+        Parameters:
+        -----------
+        ball_position : list
+            A list of dictionaries representing ball positions across frames. 
+            Each dictionary contains frame-specific information in the format:
+            [{1: {'bbox': [x1, y1, x2, y2]}}, ...].
+            If the ball is not detected in a frame, the corresponding dictionary may be empty or missing.
+
+        Returns:
+        --------
+        list
+            A list of dictionaries with interpolated ball positions for each frame in the format:
+            [{1: {'bbox': [x1, y1, x2, y2]}}, ...].
+            Missing ball positions are filled based on surrounding frames.
+        """
+        ball_position = [x.get(1, {}).get('bbox', []) for x in ball_position]
+        df_ball_positions = pd.DataFrame(ball_position, columns=['x1', 'y1', 'x2', 'y2'])
+
+        # Interpolate missing values
+        df_ball_positions = df_ball_positions.interpolate()
+        df_ball_positions = df_ball_positions.bfill()  # Backfill missing values for first frames
+
+        ball_position = [{1: {'bbox': x}} for x in df_ball_positions.to_numpy().tolist()]
+
+        return ball_position
 
     def detect_frames(self, frames: list) -> list:
         """
