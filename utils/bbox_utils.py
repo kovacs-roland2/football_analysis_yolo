@@ -32,3 +32,22 @@ def get_bbox_width(bbox: list) -> int:
         The width of the bounding box, calculated as x2 - x1.
     """
     return bbox[2] - bbox[0]
+
+def measure_distance(p1: tuple, p2: tuple) -> float:
+    """
+    Calculates the Euclidean distance between two points in a 2D space.
+
+    Parameters:
+    -----------
+    p1 : tuple
+        A tuple representing the coordinates of the first point (x1, y1).
+
+    p2 : tuple
+        A tuple representing the coordinates of the second point (x2, y2).
+
+    Returns:
+    --------
+    float
+        The Euclidean distance between the two points.
+    """
+    return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
