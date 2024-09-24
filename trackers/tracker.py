@@ -306,10 +306,50 @@ class Tracker():
         )
 
         return frame
-
-    def draw_annotations(self, video_frames: list, tracks: dict) -> list:
+    
+    def draw_team_ball_control(self, frame: list, frame_num: int, team_ball_control: np.ndarray) -> list:
         """
-        Draws annotations on video frames based on detected player, referee, and ball tracks.
+        Draws a semi-transparent rectangle and displays ball possession statistics for two teams on a video frame.
+
+        Parameters:
+        -----------
+        frame : list
+            A list representing the current video frame as a multi-dimensional array (e.g., numpy array) in BGR format.
+
+        frame_num : int
+            The index of the current frame being processed, used to calculate ball possession up to this frame.
+
+        team_ball_control : np.ndarray
+            An array where each element indicates which team has ball control in the corresponding frame.
+            1 represents Team 1, and 2 represents Team 2.
+
+        Returns:
+        --------
+        list
+            The video frame with a semi-transparent overlay and text annotations displaying the ball possession statistics for each team.
+        """
+        # Draw semi-transparent rectangle
+        overlay = frame.copy()
+        cv2.rectangle(overlay, (1350, 850), (1900, 970), (255, 255, 255), cv2.FILLED)
+        alpha = 0.4
+        cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+        # Calculate possession values
+        team_ball_control_till_frame = team_ball_control[: frame_num + 1]
+        team_1_count = team_ball_control_till_frame[team_ball_control_till_frame == 1].shape[0]
+        team_2_count = team_ball_control_till_frame[team_ball_control_till_frame == 2].shape[0]
+        all_count = team_1_count + team_2_count
+        team_1_count = team_1_count / all_count
+        team_2_count = team_2_count / all_count
+
+        cv2.putText(frame, f"Team 1 Ball Control: {team_1_count * 100: .2f}%", (1400, 900), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
+        cv2.putText(frame, f"Team 2 Ball Control: {team_2_count * 100: .2f}%", (1400, 950), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
+
+        return frame
+
+    def draw_annotations(self, video_frames: list, tracks: dict, team_ball_control) -> list:
+        """
+        Draws annotations on video frames based on detected player, referee, and ball tracks, and draws ball control panel.
 
         Parameters:
         -----------
@@ -323,6 +363,9 @@ class Tracker():
                 "referees": [{track_id: {"bbox": [x1, y1, x2, y2]}, ...}],
                 "ball": [{track_id: {"bbox": [x1, y1, x2, y2]}, ...}]
             }
+        
+        team_ball_control : list
+            A list of team ids of the team who controls the ball in the given frame.
 
         Returns:
         --------
@@ -352,6 +395,9 @@ class Tracker():
             # Draw ball
             for track_id, ball in ball_dict.items():
                 frame = self.draw_triangle(frame, ball["bbox"], (0, 255, 0))  # Green for the ball
+
+            # Draw team ball control
+            frame = self.draw_team_ball_control(frame, frame_num, team_ball_control)
                 
             output_video_frames.append(frame)
             
